@@ -1,0 +1,29 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel", "setuptools-git-versioning"]  # PEP 518 specifications.
+
+[project]
+name = "lametta"
+dynamic = ["version"]
+description = "very selfish configuration management"
+readme = "README.md"
+authors = [
+    {name = "Hinerk Stender", email = "hinerk.stender@mail.de"},
+]
+dependencies = [
+    'toml',
+    'pytest',
+]
+
+[project.urls]
+Repository = "https://github.com/hinerk/lametta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools-git-versioning]
+enabled = true
