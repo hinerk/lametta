@@ -192,7 +192,11 @@ def validate_type(value: Any, dtype: type):
         return
 
     origin = get_origin(dtype)
-    if not isinstance(value, origin):
+    if origin is UnionType:
+        if any(isinstance(value, arg) for arg in args):
+            return
+        raise TypeError(f"got {value!r} ({type(value)!r}) not found amongst legit types: {args!r}!")
+    elif not isinstance(value, origin):
         raise TypeError(f"got {value!r} ({type(value)!r}) instead of {dtype!r}!")
 
     if origin is list:
