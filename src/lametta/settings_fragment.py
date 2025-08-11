@@ -290,7 +290,6 @@ def load(
         value = coerce_types(value, field.type)
 
         # gate-check: the type of the loaded value must match the declared one:
-        validate_type(value, field.type)
         try:
             validate_type(value, field.type)
         except TypeError as e:
