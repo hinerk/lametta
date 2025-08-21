@@ -42,7 +42,7 @@ As this is an either-or situation ... fuck it. I do not want to explain my self.
 how I address this situation:
 
 ```python
-from the_test_framework.settings import settings
+from lametta import settings
 from pathlib import Path
 
 
