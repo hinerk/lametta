@@ -313,8 +313,12 @@ def inspect_settings_fragment(cls) -> Iterable[Field]:
             # skip private attributes
             continue
 
-        has_default = hasattr(cls, field_name)
-        default_value = getattr(cls, field_name, None)
+        if is_settings_fragment(field_type):
+            has_default = True
+            default_value = getattr(cls, field_name, {})
+        else:
+            has_default = hasattr(cls, field_name)
+            default_value = getattr(cls, field_name, None)
 
         yield Field(field_name, field_type, has_default, default_value)
 

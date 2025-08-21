@@ -79,5 +79,33 @@ def test_instantiation_path():
     assert Settings(field="/home/").field == Path("/home/")
 
 
+def test_instantiation_absent_embedded_setting_with_defaults():
+    @settings
+    class EmbeddedSettings:
+        field: str = "content"
+
+    @settings
+    class Settings:
+        embedded: EmbeddedSettings
+
+    assert Settings().embedded.field == "content"
+
+
+def test_instantiation_partially_customized_embedded_setting():
+    @settings
+    class EmbeddedSettings:
+        field_1: str = "content"
+        field_2: str   # has no default
+
+    @settings
+    class Settings:
+        embedded: EmbeddedSettings
+
+    with pytest.raises(AttributeError):
+        Settings()
+
+    assert Settings(embedded={"field_2": "custom"}).embedded.field_1 == "content"
+
+
 def test_embedded_instantiation():
     ...
