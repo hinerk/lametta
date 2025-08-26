@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from types import UnionType
+from types import UnionType, NoneType
 from typing import (
     Any,
     Optional,
@@ -51,9 +51,14 @@ def ensure_unions_exclusively_contain_setting_fragments(cls: SettingsFragment):
         if get_origin(field.type) not in [Union, UnionType]:
             continue
 
-        if all(is_settings_fragment(d) for d in get_args(field.type)):
+        if len(args := get_args(field.type)) == 2 and args[1] is NoneType:
+            # is optional type
             continue
-        inappropriate_types = [d for d in get_args(field.type)
+
+        if all(is_settings_fragment(d) for d in args):
+            continue
+
+        inappropriate_types = [repr(d) for d in get_args(field.type)
                                if not is_settings_fragment(d)]
         raise TypeError(
             "fields which declare union types must exclusively contain "
@@ -192,7 +197,7 @@ def validate_type(value: Any, dtype: type):
         return
 
     origin = get_origin(dtype)
-    if origin is UnionType:
+    if origin in [UnionType, Union]:
         if any(isinstance(value, arg) for arg in args):
             return
         raise TypeError(f"got {value!r} ({type(value)!r}) not found amongst legit types: {args!r}!")

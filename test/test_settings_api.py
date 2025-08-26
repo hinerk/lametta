@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import pytest
 from datetime import datetime
@@ -129,3 +130,15 @@ def test_partially_available_defaults():
     s = Settings(**SETTINGS_RAW)
     assert s.embedded.no_default == "custom"
     assert s.embedded.default == "default value"
+
+
+def test_optional():
+    @settings
+    class Credentials:
+        value: str
+
+    @settings
+    class Settings:
+        credentials: Optional[Credentials] = None
+
+    Settings().credentials = None
