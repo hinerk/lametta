@@ -109,3 +109,23 @@ def test_instantiation_partially_customized_embedded_setting():
 
 def test_embedded_instantiation():
     ...
+
+
+def test_partially_available_defaults():
+    @settings
+    class EmbeddedSettings:
+        no_default: str
+        default: str = "default value"
+
+    @settings
+    class Settings:
+        embedded: EmbeddedSettings
+
+    SETTINGS_RAW = {
+        "embedded": {
+            "no_default": "custom",
+        }
+    }
+    s = Settings(**SETTINGS_RAW)
+    assert s.embedded.no_default == "custom"
+    assert s.embedded.default == "default value"
