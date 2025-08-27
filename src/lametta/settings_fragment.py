@@ -9,11 +9,13 @@ from typing import (
     get_args,
     get_origin,
     Union,
-    Iterable, Generator,
+    Iterable,
+    Generator,
+    Annotated,
 )
 from collections.abc import Mapping
 
-from .field import Field
+from .field import Field, FieldAlias
 from .settings_fragment_protocol import SettingsFragment
 
 IS_SETTINGS_FRAGMENT_FLAG = "__settings_fragment__"
@@ -155,17 +157,19 @@ def try_load_as_setting_fragment(
         return None
 
     # all settings fragments are expected to have the same discriminating field
-    discriminating_field = setting_fragments[0].get_discriminating_field().name
+    discriminating_field = setting_fragments[0].get_discriminating_field()
+    field_name = discriminating_field.alias or discriminating_field.name
 
-    if discriminating_field not in value:
+    if field_name not in value:
         logger.warning("got embedded data structure which cannot be casted to "
                        "any of the allowed setting fragments! "
                        f"data structure: {value!r}, "
                        f"allowed setting fragments: {setting_fragments!r}")
         return None
 
-    discriminating_value = value[discriminating_field]
-    logger.debug(f"discriminating_field={discriminating_field!r}, "
+    discriminating_value = value[field_name]
+    logger.debug(f"discriminating_field={discriminating_field.name!r} "
+                 f"(alias={discriminating_field.alias!r}) "
                  f"discriminating_value={discriminating_value!r}")
 
     matching_config_fragments = [
@@ -275,8 +279,9 @@ def load(
 ) -> Generator[tuple[str, Any], None, None]:
     """used to load initialize settings fragment with data"""
     for field in cls._fields.values():
-        if not field.has_default and field.name not in raw_data:
-            raise AttributeError(f"Missing value for {field.name!r} in"
+        field_name = field.alias or field.name
+        if not field.has_default and field_name not in raw_data:
+            raise AttributeError(f"Missing value for {field_name!r} in"
                                  f" {cls.__name__!r}")
 
         # 1. initialize value with default:
@@ -284,8 +289,8 @@ def load(
 
         # 2. if data (that) has a key matching this field, set (this) value
         #    to (that) value:
-        if field.name in raw_data:
-            value = raw_data[field.name]
+        if field_name in raw_data:
+            value = raw_data[field_name]
 
         # cast if the type of this field is declared a settings fragment
         if is_settings_fragment(field.type):
@@ -314,6 +319,13 @@ def load(
 def inspect_settings_fragment(cls) -> Iterable[Field]:
     """retrieve data type configuration from class annotations"""
     for field_name, field_type in cls.__annotations__.items():
+        field_alias = None
+        # gather additional field info from annotation
+        if get_origin(field_type) is Annotated:
+            field_type, *annotations = get_args(field_type)
+            for annotation in annotations:
+                if isinstance(annotation, FieldAlias):
+                    field_alias = annotation.alias
         if field_name.startswith("_"):
             # skip private attributes
             continue
@@ -325,7 +337,11 @@ def inspect_settings_fragment(cls) -> Iterable[Field]:
             has_default = hasattr(cls, field_name)
             default_value = getattr(cls, field_name, None)
 
-        yield Field(field_name, field_type, has_default, default_value)
+        yield Field(name=field_name,
+                    type=field_type,
+                    has_default=has_default,
+                    default_value=default_value,
+                    alias=field_alias)
 
 
 def _attribute_is_overloaded(obj, attribute):

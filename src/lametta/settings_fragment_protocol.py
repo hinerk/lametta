@@ -20,6 +20,7 @@ class SettingsFragment(Protocol):
     def _add_field(
             cls,
             name: str,
+            alias: Optional[str] = None,
             dtype: Optional[Type[_T]] = None,
             has_default: bool = False,
             default_value: _T = None,

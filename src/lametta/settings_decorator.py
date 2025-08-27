@@ -1,7 +1,4 @@
-from typing import (
-    Optional,
-    Type,
-)
+from typing import Optional
 from inspect import isclass
 
 from .discriminator_field import DiscriminatorField

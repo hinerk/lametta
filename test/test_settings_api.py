@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Annotated
 
 import pytest
 from datetime import datetime
 from lametta import settings
+from lametta.field import FieldAlias
 
 
 def test_instantiation_int():
@@ -142,3 +143,84 @@ def test_optional():
         credentials: Optional[Credentials] = None
 
     Settings().credentials = None
+
+
+def test_alternate_field_name():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: str
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: str
+
+    @settings
+    class Settings:
+        float_field: Annotated[float, FieldAlias("custom float field")] = 1.5
+        list_field: Annotated[list[str], FieldAlias("custom list field")] = ["a", "b", "c"]
+        option: Annotated[OptionA | OptionB, FieldAlias("custom option")]
+
+    s = Settings(**{
+        "custom float field": 2.6,
+        "custom list field": ["a", "b", "c"][::-1],
+        "custom option": {"d": "option a"},
+    })
+    assert s.float_field == 2.6
+    assert s.list_field == ["a", "b", "c"][::-1]
+    assert isinstance(s.option, OptionA)
+
+def test_alternate_field_name_option_b():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: str
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: str
+
+    @settings
+    class Settings:
+        option: Annotated[OptionA | OptionB, FieldAlias("custom option")]
+
+    s2 = Settings(**{
+        "custom option": {"d": "option b"},
+    })
+    assert isinstance(s2.option, OptionB)
+
+
+def test_alternate_field_name_2():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: Annotated[str, FieldAlias("alias for d")]
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: Annotated[str, FieldAlias("alias for d")]
+
+    @settings
+    class Settings:
+        option: OptionA | OptionB
+
+    s = Settings(**{
+        "option": {"alias for d": "option a"},
+    })
+    assert s.option.d == "option a"
+
+
+def test_alternate_field_name_3():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: Annotated[str, FieldAlias("alias for d")]
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: Annotated[str, FieldAlias("alias for d")]
+
+    @settings
+    class Settings:
+        option: Annotated[OptionA | OptionB, FieldAlias("custom option")]
+
+    s = Settings(**{
+        "custom option": {"alias for d": "option a"},
+    })
+    assert s.option.d == "option a"
