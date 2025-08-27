@@ -9,18 +9,6 @@ from .discriminator_field import monkeypatch_discriminator_field
 from .settings_fragment import monkeypatch_settings_fragment
 
 
-def _settings_inner(
-        discriminating_field: Optional[DiscriminatorField | tuple] = None,
-):
-    def wrapper(cls: Type):
-        cls = monkeypatch_settings_fragment(cls)
-        if discriminating_field is not None:
-            cls = monkeypatch_discriminator_field(cls, discriminating_field)
-        return cls
-
-    return wrapper
-
-
 def settings(
         # attention: changing the order of arguments, require adapting
         # first_argument variable assignment below!
