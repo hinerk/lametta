@@ -56,7 +56,6 @@ def test_instantiation_list_typed():
         field: list[str]
 
     assert Settings(field=["1", "2", "3"]).field == ["1", "2", "3"]
-
     with pytest.raises(TypeError):
         # int instead of str
         Settings(field=[1, 2, 3])
@@ -224,3 +223,25 @@ def test_alternate_field_name_3():
         "custom option": {"alias for d": "option a"},
     })
     assert s.option.d == "option a"
+
+
+def test_list_of_embedded_settings():
+    SETTINGS_RAW = {
+        'embedded': [
+            {'key': 'value 1'},
+            {'key': 'value 2'},
+        ]
+    }
+
+    @settings
+    class SettingsElement:
+        key: str
+
+    @settings
+    class ListOfSettings:
+        embedded: list[SettingsElement]
+
+    s = ListOfSettings(**SETTINGS_RAW)
+    assert len(s.embedded) == 2
+    assert s.embedded[0].key == "value 1"
+    assert s.embedded[1].key == "value 2"

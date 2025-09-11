@@ -205,7 +205,7 @@ def validate_type(value: Any, dtype: type):
         if any(isinstance(value, arg) for arg in args):
             return
         raise TypeError(f"got {value!r} ({type(value)!r}) not found amongst legit types: {args!r}!")
-    elif not isinstance(value, origin):
+    elif origin is not None and not isinstance(value, origin):
         raise TypeError(f"got {value!r} ({type(value)!r}) instead of {dtype!r}!")
 
     if origin is list:
@@ -265,12 +265,20 @@ def load_from_union_type(field: Field, value: Any):
             continue
         try:
             # TODO: cast as dtype(*value), dtype(**value)
-            return dtype(value)
+            return load_arbitrary(dtype, value)
         except Exception as e:
             logger.debug(f"failed casting {value!r} as {dtype!r}: {e!r}")
 
     types = ', '.join(repr(t) for t in get_args(field.type))
     raise TypeError(f"failed casting {value!r} to any type of {types}")
+
+
+def load_arbitrary(dtype: Type[_V], value: Any):
+    if isinstance(value, Mapping):
+        return dtype(**value)
+    if isinstance(value, Iterable):
+        return dtype(*value)
+    return coerce_types(value, dtype)
 
 
 def load(
@@ -298,8 +306,15 @@ def load(
 
         # select matching setting fragment for the content if the field is a
         # union type:
-        if get_origin(field.type) in [Union, UnionType]:
+        if (origin := get_origin(field.type)) in [Union, UnionType]:
             value = load_from_union_type(field, value)
+        elif origin is list:
+            embedded_types = get_args(field.type)
+            assert len(embedded_types) == 1, "list type declaration allows for exactly one embedded type!"
+            assert isinstance(value, Iterable)
+            embedded_type = embedded_types[0]
+            if is_settings_fragment(embedded_type):
+                value = [embedded_type(**elem) for elem in value]
 
         value = coerce_types(value, field.type)
 
