@@ -283,6 +283,16 @@ def test_list_of_embedded_settings():
     assert s.embedded[1].key == "value 2"
 
 
+def test_literal():
+    @settings
+    class Settings:
+        key: Literal["value 1", "value 2"]
+
+    assert Settings(key="value 1").key == "value 1"
+    with pytest.raises(TypeError):
+        Settings(key="value 3")
+
+
 def test_dict():
     @settings
     class Settings:

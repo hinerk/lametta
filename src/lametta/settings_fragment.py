@@ -260,6 +260,12 @@ def validate_type(value: Any, dtype: type):
             validate_type(value, value_type)
         return
 
+    if origin is Literal:
+        if value in args:
+            return
+
+        raise TypeError(f"got {value!r}, but expected {args!r}!")
+
     raise TypeError(f"got {value!r} ({type(value)!r}) instead of {dtype!r}!")
 
 
