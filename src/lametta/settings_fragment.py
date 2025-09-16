@@ -11,7 +11,7 @@ from typing import (
     Union,
     Iterable,
     Generator,
-    Annotated,
+    Annotated, Literal,
 )
 from collections.abc import Mapping
 
@@ -258,6 +258,7 @@ def validate_type(value: Any, dtype: type):
         for key, value in value.items():
             validate_type(key, key_type)
             validate_type(value, value_type)
+        return
 
     raise TypeError(f"got {value!r} ({type(value)!r}) instead of {dtype!r}!")
 

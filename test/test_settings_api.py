@@ -281,3 +281,23 @@ def test_list_of_embedded_settings():
     assert len(s.embedded) == 2
     assert s.embedded[0].key == "value 1"
     assert s.embedded[1].key == "value 2"
+
+
+def test_dict():
+    @settings
+    class Settings:
+        key: dict[str, str]
+
+    s = Settings(key={
+        "arbitrary key": "arbitrary value",
+        "arbitrary key2": "arbitrary value2",
+    })
+
+    @settings
+    class Settings:
+        key: dict[str, bool]
+
+    assert Settings(key={
+        "arbitrary key": True,
+        "arbitrary key2": False,
+    }).key["arbitrary key"]
