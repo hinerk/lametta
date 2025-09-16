@@ -201,12 +201,13 @@ def validate_type(value: Any, dtype: type):
         return
 
     origin = get_origin(dtype)
+    if origin is None:
+        raise TypeError(f"got unsupported type spec: {dtype!r}!")
+
     if origin in [UnionType, Union]:
         if any(isinstance(value, arg) for arg in args):
             return
         raise TypeError(f"got {value!r} ({type(value)!r}) not found amongst legit types: {args!r}!")
-    elif origin is not None and not isinstance(value, origin):
-        raise TypeError(f"got {value!r} ({type(value)!r}) instead of {dtype!r}!")
 
     if origin is list:
         if len(args) != 1:
