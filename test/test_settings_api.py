@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Annotated
+from typing import Optional, Annotated, Literal, List
 
 import pytest
 from datetime import datetime
@@ -43,11 +43,47 @@ def test_instantiation_str():
 
 
 def test_instantiation_list():
+    with pytest.raises(TypeError):
+        @settings
+        class Settings:
+            field: list
+
     @settings
     class Settings:
-        field: list
+        field: list[int]
 
     assert Settings(field=[1, 2, 3]).field == [1, 2, 3]
+
+    with pytest.raises(TypeError):
+        Settings(field=[1, 2, "3"])
+
+
+def test_instantiation_list_2():
+    with pytest.raises(TypeError):
+        @settings
+        class Settings:
+            field: List
+
+    @settings
+    class Settings:
+        field: List[int]
+
+    assert Settings(field=[1, 2, 3]).field == [1, 2, 3]
+
+    with pytest.raises(TypeError):
+        Settings(field=[1, 2, "3"])
+
+
+def test_instantiation_list_too_many_embedded_types():
+    with pytest.raises(TypeError):
+        @settings
+        class Settings:
+            field: List[int, str]
+
+    with pytest.raises(TypeError):
+        @settings
+        class Settings:
+            field: list[int, str]
 
 
 def test_instantiation_list_typed():

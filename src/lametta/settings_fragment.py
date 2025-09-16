@@ -83,10 +83,28 @@ def ensure_there_is_at_most_one_discriminating_field(
             f"{', '.join([d.name for d in discriminating_fields])}!")
 
 
+def ensure_list_annotation_has_embedded_type(
+        cls: SettingsFragment
+):
+    for field in cls._fields.values():
+        if field.type != list and get_origin(field.type) is not list:
+            continue
+
+        embedded_types = get_args(field.type)
+        if len(embedded_types) == 0:
+            raise TypeError(f"{cls!r}.{field.name} must explicitly specify "
+                            f"the expected type of the content of list!")
+
+        if len(embedded_types) > 1:
+            raise TypeError(
+                f"{cls!r}.{field.name} is not allowed to hold more than one "
+                f"embedded type! (got {embedded_types!r})")
+
+
 def validate_settings_fragment_class(cls: SettingsFragment):
     ensure_there_is_at_most_one_discriminating_field(cls)
     ensure_unions_exclusively_contain_setting_fragments(cls)
-
+    ensure_list_annotation_has_embedded_type(cls)
 
     validate_union_fields(cls)
 
