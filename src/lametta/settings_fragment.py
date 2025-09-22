@@ -11,7 +11,9 @@ from typing import (
     Union,
     Iterable,
     Generator,
-    Annotated, Literal,
+    Annotated,
+    Literal,
+    TypeGuard,
 )
 from collections.abc import Mapping
 
@@ -24,7 +26,7 @@ IS_SETTINGS_FRAGMENT_FLAG = "__settings_fragment__"
 logger = getLogger(__name__)
 
 
-def is_settings_fragment(obj: Any) -> bool:
+def is_settings_fragment(obj: Any) -> TypeGuard[SettingsFragment]:
     return hasattr(obj, IS_SETTINGS_FRAGMENT_FLAG)
 
 
