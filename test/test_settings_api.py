@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Annotated, Literal, List
+from typing import Optional, Annotated, Literal, List, Union
 
 import pytest
 from datetime import datetime
@@ -178,6 +178,46 @@ def test_optional():
         credentials: Optional[Credentials] = None
 
     Settings().credentials = None
+
+
+def test_union():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: str
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: str
+
+    @settings
+    class Settings:
+        option: OptionA | OptionB
+
+    assert type(Settings(**{
+        "option": {"d": "option b"}
+    }).option) is OptionB
+
+
+def test_union_2():
+    @settings(discriminator_field=("d", "option a"))
+    class OptionA:
+        d: str
+
+    @settings(discriminator_field=("d", "option b"))
+    class OptionB:
+        d: str
+
+    @settings
+    class Settings:
+        option: Union[OptionA, OptionB]
+
+    assert type(Settings(**{
+        "option": {"d": "option b"}
+    }).option) is OptionB
+
+    assert type(Settings(**{
+        "option": {"d": "option a"}
+    }).option) is OptionA
 
 
 def test_alternate_field_name():
