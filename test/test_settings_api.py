@@ -204,6 +204,7 @@ def test_alternate_field_name():
     assert s.list_field == ["a", "b", "c"][::-1]
     assert isinstance(s.option, OptionA)
 
+
 def test_alternate_field_name_option_b():
     @settings(discriminator_field=("d", "option a"))
     class OptionA:
