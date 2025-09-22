@@ -2,8 +2,7 @@ from typing import overload, Callable, TypeVar, Any, cast, dataclass_transform
 
 from .discriminator_field import AllowedDiscriminatorFieldTypes
 from .discriminator_field import monkeypatch_discriminator_field
-from .settings_fragment import monkeypatch_settings_fragment
-
+from .settings_fragments import monkeypatch_settings_fragment
 
 C = TypeVar("C", bound=type[Any])
 

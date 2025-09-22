@@ -10,7 +10,7 @@ from typing import (
 )
 from dataclasses import dataclass
 
-from .settings_fragment import SettingsFragment
+from .settings_fragments import SettingsFragment
 
 
 Name: TypeAlias = str
