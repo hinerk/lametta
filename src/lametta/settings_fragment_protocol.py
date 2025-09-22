@@ -11,6 +11,7 @@ from .field import Field
 
 _T = TypeVar("_T")
 class SettingsFragment(Protocol):
+    __name__: str
     def __init__(self, **kwargs: Any): ...
     def __repr__(self) -> str: ...
     _fields: dict[str, Field]

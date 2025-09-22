@@ -423,7 +423,7 @@ def safely_setattr(obj, attr, value, dont_touch_overloaded_attributes: bool = Tr
     setattr(obj, attr, value)
 
 
-def monkeypatch_settings_fragment(cls) -> SettingsFragment:
+def monkeypatch_settings_fragment(cls) -> type[SettingsFragment]:
     safely_setattr(cls, IS_SETTINGS_FRAGMENT_FLAG, ...)
     safely_setattr(cls, "__init__", _settings_fragment_init, True)
     safely_setattr(cls, "__repr__", _settings_fragment_repr, True)
