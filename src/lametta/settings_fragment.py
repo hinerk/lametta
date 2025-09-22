@@ -14,6 +14,7 @@ from typing import (
     Annotated,
     Literal,
     TypeGuard,
+    overload,
 )
 from collections.abc import Mapping
 
@@ -205,7 +206,15 @@ def try_load_as_setting_fragment(
 
 
 _V = TypeVar("_V")
-def coerce_types(value: Any, dtype: Type[_V]) -> _V:
+
+@overload
+def coerce_types(value: int, dtype: type[float]) -> float: ...
+@overload
+def coerce_types(value: str, dtype: type[Path]) -> Path: ...
+@overload
+def coerce_types(value: _V, dtype: type[_V]) -> _V: ...
+
+def coerce_types(value, dtype):
     if dtype is float and isinstance(value, int):
         return float(value)
 
