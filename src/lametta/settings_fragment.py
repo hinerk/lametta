@@ -170,7 +170,7 @@ def get_discriminating_field(cls: Type[SettingsFragment]):
 def try_load_as_setting_fragment(
         dtypes: Iterable[Union[SettingsFragment, type]],
         value: Any
-) -> Optional[SettingsFragment]:
+) -> Optional[type[SettingsFragment]]:
     if not isinstance(value, Mapping):
         logger.debug("value isn't a mapping - no need to continue!")
         return None
