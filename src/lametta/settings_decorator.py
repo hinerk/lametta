@@ -1,24 +1,28 @@
 from typing import overload, Callable, TypeVar, Any, cast, dataclass_transform
 
-from .discriminator_field import AllowedDiscriminatorFieldTypes
 from .discriminator_field import monkeypatch_discriminator_field
+from .discriminator_field import DiscriminatorField
 from .settings_fragments import monkeypatch_settings_fragment
 
 C = TypeVar("C", bound=type[Any])
+
+
+type Name = str
+type DefaultValue = Any
 
 
 @overload
 def settings(__cls: C, /) -> C: ...
 @overload
 def settings(*,
-             discriminator_field: AllowedDiscriminatorFieldTypes | None = ...
+             discriminator_field: DiscriminatorField[Any] | tuple[Name, DefaultValue] | None = ...
              ) -> Callable[[C], C]: ...
 
 
 @dataclass_transform(kw_only_default=True)
 def settings(
         __cls: C | None = None,
-        *, discriminator_field: AllowedDiscriminatorFieldTypes | None = None,
+        *, discriminator_field: DiscriminatorField[Any] | tuple[Name, DefaultValue] | None = None,
 ) -> C | Callable[[C], C]:
     """
     decorates a settings class

@@ -1,9 +1,7 @@
 from typing import (
-    TypeAlias,
     TypeVar,
     Generic,
     Type,
-    Union,
     get_origin,
     Annotated,
     get_args
@@ -13,10 +11,8 @@ from dataclasses import dataclass
 from .settings_fragments import SettingsFragment
 
 
-Name: TypeAlias = str
-DefaultValue: TypeAlias = str
-
-AllowedDiscriminatorFieldTypes: TypeAlias = Union["DiscriminatorField", tuple[Name, DefaultValue]]
+type Name = str
+type DefaultValue = str
 
 
 _T = TypeVar("_T")
@@ -40,7 +36,7 @@ class DiscriminatorField(Generic[_T]):
 
 def monkeypatch_discriminator_field(
         cls: type[SettingsFragment],
-        df: AllowedDiscriminatorFieldTypes):
+        df: DiscriminatorField | tuple[Name, DefaultValue]):
     if isinstance(df, tuple):
         df = DiscriminatorField.new(*df)
     if df.name in cls._fields:
