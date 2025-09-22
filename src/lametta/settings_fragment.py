@@ -27,7 +27,7 @@ IS_SETTINGS_FRAGMENT_FLAG = "__settings_fragment__"
 logger = getLogger(__name__)
 
 
-def is_settings_fragment(obj: Any) -> TypeGuard[SettingsFragment]:
+def is_settings_fragment_type(obj: Any) -> TypeGuard[type[SettingsFragment]]:
     return hasattr(obj, IS_SETTINGS_FRAGMENT_FLAG)
 
 
@@ -40,7 +40,7 @@ def is_union_type_annotation(obj: Any) -> TypeGuard[UnionType]:
 def discriminating_field_names_of_union_members(union: UnionType):
     # filter for those union members, which are actually setting fragments
     setting_fragments: list[SettingsFragment] = [
-        dtype for dtype in get_args(union) if is_settings_fragment(dtype)]
+        dtype for dtype in get_args(union) if is_settings_fragment_type(dtype)]
     return {field_info.name for sf in setting_fragments
             if (field_info := sf.get_discriminating_field()) is not None}
 
@@ -64,11 +64,11 @@ def ensure_unions_exclusively_contain_setting_fragments(cls: SettingsFragment):
             # is optional type
             continue
 
-        if all(is_settings_fragment(d) for d in args):
+        if all(is_settings_fragment_type(d) for d in args):
             continue
 
         inappropriate_types = [repr(d) for d in get_args(field.type)
-                               if not is_settings_fragment(d)]
+                               if not is_settings_fragment_type(d)]
         raise TypeError(
             "fields which declare union types must exclusively contain "
             f"settings fragments! {cls!r}.{field.name}: {field.type!r} has "
@@ -175,8 +175,8 @@ def try_load_as_setting_fragment(
         logger.debug("value isn't a mapping - no need to continue!")
         return None
 
-    setting_fragments: list[SettingsFragment] = [
-        dtype for dtype in dtypes if is_settings_fragment(dtype)]
+    setting_fragments: list[type[SettingsFragment]] = [
+        dtype for dtype in dtypes if is_settings_fragment_type(dtype)]
 
     if len(setting_fragments) == 0:
         return None
@@ -301,7 +301,7 @@ def load_from_union_type(field: Field, value: Any):
         return value
 
     for dtype in dtypes:
-        if is_settings_fragment(dtype):
+        if is_settings_fragment_type(dtype):
             # already tried that ...
             continue
         try:
@@ -342,7 +342,7 @@ def load(
             value = raw_data[field_name]
 
         # cast if the type of this field is declared a settings fragment
-        if is_settings_fragment(field.type):
+        if is_settings_fragment_type(field.type):
             value = field.type(**dict(load(field.type, **value)))
 
         # select matching setting fragment for the content if the field is a
@@ -354,7 +354,7 @@ def load(
             assert len(embedded_types) == 1, "list type declaration allows for exactly one embedded type!"
             assert isinstance(value, Iterable)
             embedded_type = embedded_types[0]
-            if is_settings_fragment(embedded_type):
+            if is_settings_fragment_type(embedded_type):
                 value = [embedded_type(**elem) for elem in value]
 
         value = coerce_types(value, field.type)
@@ -386,7 +386,7 @@ def inspect_settings_fragment(cls) -> Iterable[Field]:
             # skip private attributes
             continue
 
-        if is_settings_fragment(field_type):
+        if is_settings_fragment_type(field_type):
             has_default = True
             default_value = getattr(cls, field_name, {})
         else:
