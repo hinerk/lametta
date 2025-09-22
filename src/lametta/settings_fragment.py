@@ -31,6 +31,10 @@ def is_settings_fragment(obj: Any) -> TypeGuard[SettingsFragment]:
     return hasattr(obj, IS_SETTINGS_FRAGMENT_FLAG)
 
 
+def is_union_type_annotation(obj: Any) -> TypeGuard[UnionType]:
+    return get_origin(obj) is Union
+
+
 # *** validation **************************************************************
 
 def discriminating_field_names_of_union_members(union: UnionType):
@@ -43,7 +47,7 @@ def discriminating_field_names_of_union_members(union: UnionType):
 
 def validate_union_fields(cls: SettingsFragment):
     for field in cls._fields.values():
-        if get_origin(field.type) in [Union, UnionType]:
+        if is_union_type_annotation(field.type):
             names = discriminating_field_names_of_union_members(field.type)
             if len(names) > 1:
                 raise TypeError(
@@ -53,7 +57,7 @@ def validate_union_fields(cls: SettingsFragment):
 
 def ensure_unions_exclusively_contain_setting_fragments(cls: SettingsFragment):
     for field in cls._fields.values():
-        if get_origin(field.type) not in [Union, UnionType]:
+        if not is_union_type_annotation(field.type):
             continue
 
         if len(args := get_args(field.type)) == 2 and args[1] is NoneType:
