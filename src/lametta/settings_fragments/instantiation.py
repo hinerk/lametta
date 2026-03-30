@@ -198,7 +198,7 @@ def load(
 
         # cast if the type of this field is declared a settings fragment
         if is_settings_fragment_type(field.type):
-            value = field.type(**dict(load(field.type, **value)))
+            value = field.type(**value)
 
         # select matching setting fragment for the content if the field is a
         # union type:

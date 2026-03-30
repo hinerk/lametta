@@ -324,6 +324,31 @@ def test_list_of_embedded_settings():
     assert s.embedded[1].key == "value 2"
 
 
+def test_deeply_embedded():
+    @settings
+    class DeeplyEmbedded:
+        key: str
+
+    @settings
+    class Embedded:
+        deeply_embedded: list[DeeplyEmbedded]
+
+    @settings
+    class Settings:
+        embedded: Embedded
+
+    SETTINGS_RAW = {
+        "embedded": {
+            "deeply_embedded": [
+            {'key': 'value 1'},
+            {'key': 'value 2'},
+        ]
+        }
+    }
+
+    assert Settings(**SETTINGS_RAW).embedded.deeply_embedded[0].key == "value 1"
+
+
 def test_literal():
     @settings
     class Settings:
